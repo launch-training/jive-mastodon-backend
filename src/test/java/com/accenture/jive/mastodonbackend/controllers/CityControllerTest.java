@@ -1,5 +1,6 @@
 package com.accenture.jive.mastodonbackend.controllers;
 
+import com.accenture.jive.mastodonbackend.controllers.dtos.CityDtoInput;
 import com.accenture.jive.mastodonbackend.controllers.dtos.CityDtoOutput;
 import com.accenture.jive.mastodonbackend.persistence.entities.City;
 import com.accenture.jive.mastodonbackend.persistence.repositories.CityRepository;
@@ -54,7 +55,48 @@ class CityControllerTest {
             assertEquals(2, resultBody.size());
             //todo: auch den Inhalt testen
         }
+    }
 
+    @Test
+    void testCreateCityNew() {
+        CityDtoInput dto1 = createDtoInput("Hamburg", BigDecimal.valueOf(53.55), BigDecimal.valueOf(10));
+        ResponseEntity<CityDtoOutput> result = cityController.createCity(dto1);
+        HttpStatusCode actualStatusCode = result.getStatusCode();
+        HttpStatusCode expectedStatusCode = HttpStatusCode.valueOf(201);
+        assertEquals(expectedStatusCode, actualStatusCode);
+
+        CityDtoOutput createdCity = result.getBody();
+        assertEquals(dto1.getName(), createdCity.getName());
+    }
+
+    @Test
+    void testCreateCityExisting() {
+        CityDtoInput dto1 = createDtoInput("Hamburg", BigDecimal.valueOf(53.55), BigDecimal.valueOf(10));
+        CityDtoInput dto2 = createDtoInput("Hamburg", BigDecimal.valueOf(53.55), BigDecimal.valueOf(10.00));
+        {
+            ResponseEntity<CityDtoOutput> result = cityController.createCity(dto1);
+            HttpStatusCode actualStatusCode = result.getStatusCode();
+            HttpStatusCode expectedStatusCode = HttpStatusCode.valueOf(201);
+            assertEquals(expectedStatusCode, actualStatusCode);
+            CityDtoOutput createdCity = result.getBody();
+            assertEquals(dto1.getName(), createdCity.getName());
+        }
+        {
+            ResponseEntity<CityDtoOutput> result = cityController.createCity(dto2);
+            HttpStatusCode actualStatusCode = result.getStatusCode();
+            HttpStatusCode expectedStatusCode = HttpStatusCode.valueOf(200);
+            assertEquals(expectedStatusCode, actualStatusCode);
+            CityDtoOutput createdCity = result.getBody();
+            assertEquals(dto2.getName(), createdCity.getName());
+        }
+    }
+
+    private CityDtoInput createDtoInput(String name, BigDecimal latitude, BigDecimal longitude) {
+        CityDtoInput dto = new CityDtoInput();
+        dto.setName(name);
+        dto.setLatitude(latitude);
+        dto.setLongitude(longitude);
+        return dto;
     }
 
     private City createCity(String name, BigDecimal latitude, BigDecimal longitude) {
@@ -68,6 +110,5 @@ class CityControllerTest {
         cityRepository.save(city);
         return city;
     }
-
 
 }
