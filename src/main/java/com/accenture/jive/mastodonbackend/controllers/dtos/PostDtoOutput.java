@@ -8,7 +8,7 @@ public class PostDtoOutput {
     private String name;
     private LocalDateTime mastodonDate;
     private String mastodonUrl;
-    private String iconUrl;
+    private String icon;
     private String postText;
 
     public String getUuid() {
@@ -43,12 +43,12 @@ public class PostDtoOutput {
         this.mastodonUrl = mastodonUrl;
     }
 
-    public String getIconUrl() {
-        return iconUrl;
+    public String getIcon() {
+        return icon;
     }
 
-    public void setIconUrl(String iconUrl) {
-        this.iconUrl = iconUrl;
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 
     public String getPostText() {

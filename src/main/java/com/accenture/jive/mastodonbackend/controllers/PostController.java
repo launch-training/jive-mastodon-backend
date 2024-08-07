@@ -27,5 +27,4 @@ public class PostController {
         List<PostDtoOutput> dtos = postMapper.toDtos(posts);
         return ResponseEntity.ok(dtos);
     }
-
 }
