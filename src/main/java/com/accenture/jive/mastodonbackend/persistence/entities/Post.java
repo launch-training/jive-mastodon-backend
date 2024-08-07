@@ -16,6 +16,8 @@ public class Post {
     private LocalDateTime timestampWeatherRequest;
     private LocalDateTime timestampMastodonPosted;
     private String postLink;
+    private String iconUrl;
+    private String postText;
 
     @ManyToOne
     @JoinColumn(name = "location_id")
@@ -67,5 +69,21 @@ public class Post {
 
     public void setCity(City city) {
         this.city = city;
+    }
+
+    public String getIconUrl() {
+        return iconUrl;
+    }
+
+    public void setIconUrl(String iconUrl) {
+        this.iconUrl = iconUrl;
+    }
+
+    public String getPostText() {
+        return postText;
+    }
+
+    public void setPostText(String postText) {
+        this.postText = postText;
     }
 }
