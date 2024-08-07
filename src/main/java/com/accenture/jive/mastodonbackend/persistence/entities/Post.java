@@ -1,7 +1,6 @@
 package com.accenture.jive.mastodonbackend.persistence.entities;
 
 import jakarta.persistence.*;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +15,10 @@ public class Post {
     private LocalDateTime timestampWeatherRequest;
     private LocalDateTime timestampMastodonPosted;
     private String postLink;
+    @Column(name = "icon_url")
+    private String icon;
+    @Column(name = "description")
+    private String postText;
 
     @ManyToOne
     @JoinColumn(name = "location_id")
@@ -67,5 +70,21 @@ public class Post {
 
     public void setCity(City city) {
         this.city = city;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
+    }
+
+    public String getPostText() {
+        return postText;
+    }
+
+    public void setPostText(String postText) {
+        this.postText = postText;
     }
 }
