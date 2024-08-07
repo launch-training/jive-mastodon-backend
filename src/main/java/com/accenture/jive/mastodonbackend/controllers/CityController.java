@@ -1,5 +1,6 @@
 package com.accenture.jive.mastodonbackend.controllers;
 
+import com.accenture.jive.mastodonbackend.controllers.dtos.CityDtoActiveInput;
 import com.accenture.jive.mastodonbackend.controllers.dtos.CityDtoInput;
 import com.accenture.jive.mastodonbackend.controllers.dtos.CityDtoOutput;
 import com.accenture.jive.mastodonbackend.controllers.mappers.CityMapper;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:5173/")
 @RestController
@@ -44,6 +46,19 @@ public class CityController {
         City savedCity = cityRepository.save(city);
         CityDtoOutput dtoOutput = cityMapper.toDtoOutput(savedCity);
         return ResponseEntity.status(HttpStatus.CREATED).body(dtoOutput);
+    }
+
+    @PutMapping("/cities/{guid}")
+    public ResponseEntity<CityDtoOutput> updateCity(@PathVariable String guid, @RequestBody CityDtoActiveInput cityDtoActiveInput) {
+        Optional<City> optionalCity = cityRepository.findByGuid(guid);
+        if (optionalCity.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        City city = optionalCity.get();
+        city.setActive(cityDtoActiveInput.isActive());
+        City updatedCity = cityRepository.save(city);
+        CityDtoOutput dtoOutput = cityMapper.toDtoOutput(updatedCity);
+        return ResponseEntity.ok(dtoOutput);
     }
 
 }
