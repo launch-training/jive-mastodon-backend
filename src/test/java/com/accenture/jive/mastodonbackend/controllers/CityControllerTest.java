@@ -1,5 +1,6 @@
 package com.accenture.jive.mastodonbackend.controllers;
 
+import com.accenture.jive.mastodonbackend.controllers.dtos.CityDtoActiveInput;
 import com.accenture.jive.mastodonbackend.controllers.dtos.CityDtoInput;
 import com.accenture.jive.mastodonbackend.controllers.dtos.CityDtoOutput;
 import com.accenture.jive.mastodonbackend.persistence.entities.City;
@@ -91,6 +92,39 @@ class CityControllerTest {
         }
     }
 
+    @Test
+    void updateCity() {
+        City city1 = createCity("Hamburg", BigDecimal.valueOf(53.55), BigDecimal.valueOf(10));
+
+        {
+            ResponseEntity<CityDtoOutput> result = cityController.updateCity(city1.getGuid(), createDtoActiveInput(false));
+            HttpStatusCode actualStatusCode = result.getStatusCode();
+            HttpStatusCode expectedStatusCode = HttpStatusCode.valueOf(200);
+            assertEquals(expectedStatusCode, actualStatusCode);
+            assertFalse(result.getBody().isActive());
+        }
+        {
+            ResponseEntity<CityDtoOutput> result = cityController.updateCity(city1.getGuid(), createDtoActiveInput(true));
+            HttpStatusCode actualStatusCode = result.getStatusCode();
+            HttpStatusCode expectedStatusCode = HttpStatusCode.valueOf(200);
+            assertEquals(expectedStatusCode, actualStatusCode);
+            assertTrue(result.getBody().isActive());
+        }
+        {
+            ResponseEntity<CityDtoOutput> result = cityController.updateCity("9c54d78c-9740-48c7-bf39-e89443e9d316", createDtoActiveInput(false));
+            HttpStatusCode actualStatusCode = result.getStatusCode();
+            HttpStatusCode expectedStatusCode = HttpStatusCode.valueOf(404);
+            assertEquals(expectedStatusCode, actualStatusCode);
+        }
+
+    }
+
+    private CityDtoActiveInput createDtoActiveInput(boolean active) {
+        CityDtoActiveInput cityDtoActiveInput = new CityDtoActiveInput();
+        cityDtoActiveInput.setActive(active);
+        return cityDtoActiveInput;
+    }
+
     private CityDtoInput createDtoInput(String name, BigDecimal latitude, BigDecimal longitude) {
         CityDtoInput dto = new CityDtoInput();
         dto.setName(name);
@@ -110,5 +144,4 @@ class CityControllerTest {
         cityRepository.save(city);
         return city;
     }
-
 }
