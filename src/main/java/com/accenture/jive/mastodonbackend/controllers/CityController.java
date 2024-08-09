@@ -36,6 +36,12 @@ public class CityController {
         Page<City> cities = cityRepository.findAll(pageable);
         List<City> content = cities.getContent();
         List<CityDtoOutput> dtos = cityMapper.toDtosOutput(content);
+
+        //TODO: also return currentPage and totalPages to Frontend - ?? how to write this into response entitiy?
+        //Do we use a hashmap for this? any better ideas?
+        int pageNumber = cities.getNumber();
+        int totalPages = cities.getTotalPages();
+
         return ResponseEntity.ok(dtos);
     }
 
