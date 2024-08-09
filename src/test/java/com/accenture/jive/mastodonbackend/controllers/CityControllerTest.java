@@ -3,29 +3,44 @@ package com.accenture.jive.mastodonbackend.controllers;
 import com.accenture.jive.mastodonbackend.controllers.dtos.CityDtoActiveInput;
 import com.accenture.jive.mastodonbackend.controllers.dtos.CityDtoInput;
 import com.accenture.jive.mastodonbackend.controllers.dtos.CityDtoOutput;
+import com.accenture.jive.mastodonbackend.controllers.mappers.CityMapper;
 import com.accenture.jive.mastodonbackend.persistence.entities.City;
 import com.accenture.jive.mastodonbackend.persistence.repositories.CityRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.servlet.MockMvc;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 class CityControllerTest {
 
     @Autowired
     CityController cityController;
     @Autowired
     CityRepository cityRepository;
+    @Autowired
+    CityMapper cityMapper;
 
     @BeforeEach
     void cleanUpDB() {
@@ -35,7 +50,7 @@ class CityControllerTest {
     @Test
     void readAllCities() {
         {
-            ResponseEntity<List<CityDtoOutput>> result = cityController.readAllCities(0);
+            ResponseEntity<List<CityDtoOutput>> result = cityController.readAllCities(0, 500);
             HttpStatusCode actualStatusCode = result.getStatusCode();
             HttpStatusCode expectedStatusCode = HttpStatusCode.valueOf(200);
             assertEquals(expectedStatusCode, actualStatusCode);
@@ -47,7 +62,7 @@ class CityControllerTest {
             City city1 = createCity("Hamburg", BigDecimal.valueOf(53.55), BigDecimal.valueOf(10));
             City city2 = createCity("Augsburg", BigDecimal.valueOf(48.37), BigDecimal.valueOf(10.88));
 
-            ResponseEntity<List<CityDtoOutput>> result = cityController.readAllCities(0);
+            ResponseEntity<List<CityDtoOutput>> result = cityController.readAllCities(0, 500);
             HttpStatusCode actualStatusCode = result.getStatusCode();
             HttpStatusCode expectedStatusCode = HttpStatusCode.valueOf(200);
             assertEquals(expectedStatusCode, actualStatusCode);
@@ -56,6 +71,39 @@ class CityControllerTest {
             assertEquals(2, resultBody.size());
             //todo: auch den Inhalt testen
         }
+    }
+
+    @Test
+    void readAllCitiesPaginated(@Autowired MockMvc mvc) throws Exception {
+        String json = mvc.perform(get("/cities").param("page", "0"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        assertEquals("[]", json);
+
+        City city1 = createCity("Hamburg", BigDecimal.valueOf(53.55), BigDecimal.valueOf(10));
+        City city2 = createCity("Augsburg", BigDecimal.valueOf(48.37), BigDecimal.valueOf(10.88));
+        City city3 = createCity("Augsburg", BigDecimal.valueOf(48.37), BigDecimal.valueOf(10.88));
+        City city4 = createCity("Augsburg", BigDecimal.valueOf(48.37), BigDecimal.valueOf(10.88));
+
+        String page0 = mvc.perform(get("/cities").param("page", "0"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        CityDtoOutput[] citiesArray = objectMapper.readValue(page0, CityDtoOutput[].class);
+        assertEquals(2, citiesArray.length);
+
+        //TODO: extend testing to check the correct objects are returnd
+        List<City> expectedCities = new ArrayList<>();
+        expectedCities.add(city1);
+        expectedCities.add(city2);
+        expectedCities.add(city3);
+        expectedCities.add(city4);
+
+        List<CityDtoOutput> dtosExpected = cityMapper.toDtosOutput(expectedCities);
+        List<CityDtoOutput> dtosActual = new ArrayList<>(Arrays.asList(citiesArray));
+
+
     }
 
     @Test

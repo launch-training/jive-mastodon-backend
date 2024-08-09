@@ -29,8 +29,9 @@ public class CityController {
 
     @GetMapping("/cities")
     public ResponseEntity<List<CityDtoOutput>> readAllCities(
-            @RequestParam(required = false, name = "page", defaultValue = "0") Integer page) {
-        Integer size = 2;
+            @RequestParam(required = false, name = "page", defaultValue = "0") Integer page,
+            @RequestParam(required = false, name = "size", defaultValue = "2") Integer size) {
+
         Pageable pageable = PageRequest.of(page, size);
         Page<City> cities = cityRepository.findAll(pageable);
         List<City> content = cities.getContent();
