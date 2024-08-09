@@ -35,7 +35,7 @@ class CityControllerTest {
     @Test
     void readAllCities() {
         {
-            ResponseEntity<List<CityDtoOutput>> result = cityController.readAllCities();
+            ResponseEntity<List<CityDtoOutput>> result = cityController.readAllCities(0);
             HttpStatusCode actualStatusCode = result.getStatusCode();
             HttpStatusCode expectedStatusCode = HttpStatusCode.valueOf(200);
             assertEquals(expectedStatusCode, actualStatusCode);
@@ -47,7 +47,7 @@ class CityControllerTest {
             City city1 = createCity("Hamburg", BigDecimal.valueOf(53.55), BigDecimal.valueOf(10));
             City city2 = createCity("Augsburg", BigDecimal.valueOf(48.37), BigDecimal.valueOf(10.88));
 
-            ResponseEntity<List<CityDtoOutput>> result = cityController.readAllCities();
+            ResponseEntity<List<CityDtoOutput>> result = cityController.readAllCities(0);
             HttpStatusCode actualStatusCode = result.getStatusCode();
             HttpStatusCode expectedStatusCode = HttpStatusCode.valueOf(200);
             assertEquals(expectedStatusCode, actualStatusCode);
