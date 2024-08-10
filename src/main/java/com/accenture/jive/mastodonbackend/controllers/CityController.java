@@ -3,6 +3,7 @@ package com.accenture.jive.mastodonbackend.controllers;
 import com.accenture.jive.mastodonbackend.controllers.dtos.CityDtoActiveInput;
 import com.accenture.jive.mastodonbackend.controllers.dtos.CityDtoInput;
 import com.accenture.jive.mastodonbackend.controllers.dtos.CityDtoOutput;
+import com.accenture.jive.mastodonbackend.controllers.dtos.PageCityDto;
 import com.accenture.jive.mastodonbackend.controllers.mappers.CityMapper;
 import com.accenture.jive.mastodonbackend.persistence.entities.City;
 import com.accenture.jive.mastodonbackend.persistence.repositories.CityRepository;
@@ -28,7 +29,7 @@ public class CityController {
     CityMapper cityMapper;
 
     @GetMapping("/cities")
-    public ResponseEntity<List<CityDtoOutput>> readAllCities(
+    public ResponseEntity<PageCityDto> readAllCities(
             @RequestParam(required = false, name = "page", defaultValue = "0") Integer page,
             @RequestParam(required = false, name = "size", defaultValue = "2") Integer size) {
 
@@ -37,12 +38,14 @@ public class CityController {
         List<City> content = cities.getContent();
         List<CityDtoOutput> dtos = cityMapper.toDtosOutput(content);
 
-        //TODO: also return currentPage and totalPages to Frontend - ?? how to write this into response entitiy?
-        //Do we use a hashmap for this? any better ideas?
+        PageCityDto response = new PageCityDto();
         int pageNumber = cities.getNumber();
         int totalPages = cities.getTotalPages();
+        response.setData(dtos);
+        response.setPageNumber(pageNumber);
+        response.setTotalPages(totalPages);
 
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/cities")
