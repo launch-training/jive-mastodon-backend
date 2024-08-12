@@ -3,6 +3,7 @@ package com.accenture.jive.mastodonbackend.controllers;
 import com.accenture.jive.mastodonbackend.controllers.dtos.CityDtoActiveInput;
 import com.accenture.jive.mastodonbackend.controllers.dtos.CityDtoInput;
 import com.accenture.jive.mastodonbackend.controllers.dtos.CityDtoOutput;
+import com.accenture.jive.mastodonbackend.controllers.dtos.PageCityDto;
 import com.accenture.jive.mastodonbackend.controllers.mappers.CityMapper;
 import com.accenture.jive.mastodonbackend.persistence.entities.City;
 import com.accenture.jive.mastodonbackend.persistence.repositories.CityRepository;
@@ -10,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.RoundingMode;
 import java.util.List;
@@ -25,10 +29,23 @@ public class CityController {
     CityMapper cityMapper;
 
     @GetMapping("/cities")
-    public ResponseEntity<List<CityDtoOutput>> readAllCities() {
-        List<City> cities = cityRepository.findAll();
-        List<CityDtoOutput> dtos = cityMapper.toDtosOutput(cities);
-        return ResponseEntity.ok(dtos);
+    public ResponseEntity<PageCityDto> readAllCities(
+            @RequestParam(required = false, name = "page", defaultValue = "0") Integer page,
+            @RequestParam(required = false, name = "size", defaultValue = "2") Integer size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<City> cities = cityRepository.findAll(pageable);
+        List<City> content = cities.getContent();
+        List<CityDtoOutput> dtos = cityMapper.toDtosOutput(content);
+
+        PageCityDto response = new PageCityDto();
+        int pageNumber = cities.getNumber();
+        int totalPages = cities.getTotalPages();
+        response.setData(dtos);
+        response.setPageNumber(pageNumber);
+        response.setTotalPages(totalPages);
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/cities")
@@ -49,7 +66,8 @@ public class CityController {
     }
 
     @PutMapping("/cities/{guid}")
-    public ResponseEntity<CityDtoOutput> updateCity(@PathVariable String guid, @RequestBody CityDtoActiveInput cityDtoActiveInput) {
+    public ResponseEntity<CityDtoOutput> updateCity(@PathVariable String guid,
+                                                    @RequestBody CityDtoActiveInput cityDtoActiveInput) {
         Optional<City> optionalCity = cityRepository.findByGuid(guid);
         if (optionalCity.isEmpty()) {
             return ResponseEntity.notFound().build();
